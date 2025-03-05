@@ -1,6 +1,7 @@
 package com.example.SimCore;
 
 public abstract class MonteCarloCore {
+    private double result = 0.0;
     // Simulačný cyklus
     public final void runSimulation(int numberOfReplications) {
         
@@ -9,15 +10,15 @@ public abstract class MonteCarloCore {
             executeSimRun();
             afterSimRun();
         }
+        afterSimulation();
         
     }
-    
+    protected void afterSimulation(){
+    }
     protected void beforeSimRun() {
-        System.out.println("beforeSimRun()");
     }
 
     protected void afterSimRun() {
-        System.out.println("afterSimRun()");
     }
 
     protected abstract void executeSimRun();

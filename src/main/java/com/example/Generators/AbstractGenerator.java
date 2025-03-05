@@ -2,11 +2,13 @@ package com.example.Generators;
 import java.util.*;
 
 abstract class AbstractGenerator<T> {
-    protected final Random probability;
+    protected final Random seedGenerator;
+    protected final Random probabilityGenerator;
     protected final List<Random> intervalGenerators;
 
-    public AbstractGenerator(Long seed) {
-        this.probability = (seed != null) ? new Random(seed) : new Random();
+    public AbstractGenerator(Random seedGenerator) {
+        this.seedGenerator = seedGenerator;
+        this.probabilityGenerator = new Random(seedGenerator.nextLong());
         this.intervalGenerators = new ArrayList<>();
     }
 

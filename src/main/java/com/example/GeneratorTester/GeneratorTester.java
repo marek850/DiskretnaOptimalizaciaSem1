@@ -2,14 +2,14 @@ package com.example.GeneratorTester;
 
 import java.util.*;
 
-import com.example.ContinuousGenerator;
-import com.example.DiscreteGenerator;
+import com.example.Generators.ContinuousGenerator;
+import com.example.Generators.DiscreteGenerator;
 
 public class GeneratorTester {
     private static final int SAMPLE_SIZE = 1000000;
     private static final int INTERVAL_COUNT = 5;
     
-    public static void testContinuousGenerator(Long seed) {
+    public static void testContinuousGenerator(Random seed) {
         List<double[]> intervals = generateContinuousIntervals();
         List<Double> probabilities = generateProbabilities(INTERVAL_COUNT);
         ContinuousGenerator generator = new ContinuousGenerator(seed, intervals, probabilities);
@@ -32,7 +32,7 @@ public class GeneratorTester {
         printResults("Continuous Generator", intervals, probabilities, counts);
     }
 
-    public static void testDiscreteGenerator(Long seed) {
+    public static void testDiscreteGenerator(Random seed) {
         List<int[]> intervals = generateDiscreteIntervals();
         List<Double> probabilities = generateProbabilities(INTERVAL_COUNT);
         DiscreteGenerator generator = new DiscreteGenerator(seed, intervals, probabilities);
