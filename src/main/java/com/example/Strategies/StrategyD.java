@@ -5,7 +5,7 @@ import java.util.Random;
 import com.example.Generators.ContinuousGenerator;
 import com.example.Generators.DiscreteGenerator;
 import com.example.SimCore.MonteCarloCore;
-public class StrategyA extends MonteCarloCore{
+public class StrategyD extends MonteCarloCore{
     private final int suspensionSupply = 100;
     private final int brakePadsSupply = 200;
     private final int headlightsSupply = 150;
@@ -19,17 +19,44 @@ public class StrategyA extends MonteCarloCore{
     private int reps = 0;
     private Random seedGenerator = new Random();
     private Random probabilityGenerator = new Random(seedGenerator.nextLong());
-    private ContinuousGenerator supplierFirstTenGen = new ContinuousGenerator(seedGenerator, List.of(new double[]{10.0, 70.0}), List.of(1.0));;
-    private ContinuousGenerator supplierLastGen = new ContinuousGenerator(seedGenerator, List.of(new double[]{30.0, 95.0}), List.of(1.0));
+    private ContinuousGenerator supplier2FirstFourTeenGen = new ContinuousGenerator(seedGenerator, List.of(
+        new double[]{5.0, 10.0},
+        new double[]{10.0, 50.0},
+        new double[]{50.0, 70.0},
+        new double[]{70.0, 80.0},
+        new double[]{80.0, 95.0}), List.of(
+            0.4,
+            0.3,
+            0.2,
+            0.06,
+            0.04));
+    private ContinuousGenerator supplier2LastGen = new ContinuousGenerator(seedGenerator, List.of(
+        new double[]{5.0, 10.0},
+        new double[]{10.0, 50.0},
+        new double[]{50.0, 70.0},
+        new double[]{70.0, 80.0},
+        new double[]{80.0, 95.0}), List.of(
+            0.2,
+            0.4,
+            0.3,
+            0.06,
+            0.04));
     private DiscreteGenerator suspensionDemandGen = new DiscreteGenerator(seedGenerator, List.of(new int[]{50, 101}), List.of(1.0));
     private DiscreteGenerator brakePadsDemandGen = new DiscreteGenerator(seedGenerator, List.of(new int[]{60, 251}), List.of(1.0));
-    private DiscreteGenerator headlightsDemandGen = new DiscreteGenerator(seedGenerator, List.of(new int[]{30, 60},new int[]{60, 100},new int[]{100, 140}           
-                                                                                                                        , new int[]{140, 160}), List.of(0.2, 0.4, 0.3, 0.1));
-
+    private DiscreteGenerator headlightsDemandGen = new DiscreteGenerator(seedGenerator, List.of(
+        new int[]{30, 60},
+        new int[]{60, 100},
+        new int[]{100, 140}, 
+        new int[]{140, 160}), List.of(
+            0.2,
+            0.4,
+            0.3, 
+            0.1));
+    private ContinuousGenerator supplierFirstTenGen = new ContinuousGenerator(seedGenerator, List.of(new double[]{10.0, 70.0}), List.of(1.0));;
+    private ContinuousGenerator supplierLastGen = new ContinuousGenerator(seedGenerator, List.of(new double[]{30.0, 95.0}), List.of(1.0));
 
     @Override
     protected void executeSimRun() {
-        int dayIndex = 0;
         //System.out.println(this.seed);
         //Prechadzam 30 tyzdnov
         for (int i = 0; i < weeks; i++) {
@@ -40,14 +67,10 @@ public class StrategyA extends MonteCarloCore{
                 if (j == 4) {
                     sellStock();
                 }
-                // Výpočet nákladov pre aktuálny deň
-                double cost = this.suspensionStock * 0.2 + this.brakePadsStock * 0.3 + this.headlightsStock * 0.25;
-                this.totalCost += cost;
-
-                /* //pripocitavam naklady na skladovanie
+                //pripocitavam naklady na skladovanie
                 this.totalCost += this.suspensionStock * 0.2;
                 this.totalCost += this.brakePadsStock * 0.3;
-                this.totalCost += this.headlightsStock * 0.25; */
+                this.totalCost += this.headlightsStock * 0.25;
                 //ak je piatok tak predam suciastky
                 
             }
@@ -101,21 +124,36 @@ public class StrategyA extends MonteCarloCore{
     }
     private void getStock(int week){
         double probabilityOfSupply = 0.0;
-        //prvych 10 tyzdnov je pravdepodobnost dodania od 10 do 70 percent
-        //Vygenerujem s akou pravdepodobnostou dodavatel doda v danom tyzdni
-        if (week < 10) {
-            probabilityOfSupply = supplierFirstTenGen.getSample();
+        // Rozdelenie podľa párneho a nepárneho týždňa (0 je nepárny, 1 je párny)
+        boolean isOddWeek = (week % 2 == 0); 
+        if (!isOddWeek) {
+            if (week < 10) {
+                probabilityOfSupply = supplierFirstTenGen.getSample();
+            }
+            else {
+                probabilityOfSupply = supplierLastGen.getSample();
+            }
+            double randomValue = probabilityGenerator.nextDouble() * 100;
+            if (randomValue < probabilityOfSupply) {
+                this.suspensionStock += this.suspensionSupply;
+                this.brakePadsStock += this.brakePadsSupply;
+                this.headlightsStock += this.headlightsSupply;
+            }
+        } else{
+            if (week < 15) {
+                probabilityOfSupply = supplier2FirstFourTeenGen.getSample();
+            }
+            else {
+                probabilityOfSupply = supplier2LastGen.getSample();
+            }
+            //vygenerujem si nahodnu hodnotu a ak je mensia ako pravdepodobnost dodania tak dodam(navysim zasoby na sklade o fixnu hodnotu )
+            double randomValue = probabilityGenerator.nextDouble() * 100;
+            if (randomValue < probabilityOfSupply) {
+                this.suspensionStock += this.suspensionSupply;
+                this.brakePadsStock += this.brakePadsSupply;
+                this.headlightsStock += this.headlightsSupply;
+            }
         }
-        //od 11 tyzdna je pravdepodobnost dodania od 30 do 95 percent
-        else {
-            probabilityOfSupply = supplierLastGen.getSample();
-        }
-        //vygenerujem si nahodnu hodnotu a ak je mensia ako pravdepodobnost dodania tak dodam(navysim zasoby na sklade o fixnu hodnotu )
-        double randomValue = probabilityGenerator.nextDouble() * 100;
-        if (randomValue < probabilityOfSupply) {
-            this.suspensionStock += this.suspensionSupply;
-            this.brakePadsStock += this.brakePadsSupply;
-            this.headlightsStock += this.headlightsSupply;
-        }
+        
     }
 }

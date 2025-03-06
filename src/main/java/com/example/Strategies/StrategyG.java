@@ -5,10 +5,10 @@ import java.util.Random;
 import com.example.Generators.ContinuousGenerator;
 import com.example.Generators.DiscreteGenerator;
 import com.example.SimCore.MonteCarloCore;
-public class StrategyA extends MonteCarloCore{
-    private final int suspensionSupply = 100;
-    private final int brakePadsSupply = 200;
-    private final int headlightsSupply = 150;
+public class StrategyG extends MonteCarloCore{
+    private final int suspensionSupply = 75;
+    private final int brakePadsSupply = 155;
+    private final int headlightsSupply = 91;
     private final int weeks = 30;
     private int suspensionStock = 0;
     private int brakePadsStock = 0;
@@ -29,27 +29,15 @@ public class StrategyA extends MonteCarloCore{
 
     @Override
     protected void executeSimRun() {
-        int dayIndex = 0;
-        //System.out.println(this.seed);
-        //Prechadzam 30 tyzdnov
         for (int i = 0; i < weeks; i++) {
-            //naskladnim suciastky na zaciatku tyzdna
             getStock(i);
-            //Prechadzam dni v tyzdni
             for (int j = 0; j < 7; j++) {
                 if (j == 4) {
                     sellStock();
                 }
-                // Výpočet nákladov pre aktuálny deň
-                double cost = this.suspensionStock * 0.2 + this.brakePadsStock * 0.3 + this.headlightsStock * 0.25;
-                this.totalCost += cost;
-
-                /* //pripocitavam naklady na skladovanie
                 this.totalCost += this.suspensionStock * 0.2;
                 this.totalCost += this.brakePadsStock * 0.3;
-                this.totalCost += this.headlightsStock * 0.25; */
-                //ak je piatok tak predam suciastky
-                
+                this.totalCost += this.headlightsStock * 0.25;                
             }
         }
         this.suspensionStock = 0;
@@ -57,16 +45,11 @@ public class StrategyA extends MonteCarloCore{
         this.headlightsStock = 0;
         this.reps += 1;
         //spocitam priemerne naklady za 30 tyzdnov( jednu replikaciu simulacie)
-        this.result = this.totalCost / this.reps;
-        if (callback != null) {
-            callback.onDataPoint(reps, result);
-        }
-        //System.out.println(this.result);
-        
+        this.result = this.totalCost / this.reps;        
     }
     @Override
     protected void afterSimulation(){
-        
+        System.out.println("Cost " + this.result);
     }
     private void sellStock(){
         //vygenerujem si dopyt na suciastky
@@ -74,13 +57,10 @@ public class StrategyA extends MonteCarloCore{
         int brakePadsDemand = this.brakePadsDemandGen.getSample();  
         int headlightsDemand = this.headlightsDemandGen.getSample();
         int totalMissing = 0;
-        //ak je dopyt vacsi ako zasoby tak pridam chybajucu suciastku do celkovej chyby
-        //a zasoby nastavim na 0
         if (suspensionStock < suspensionDemand) {
             totalMissing += suspensionDemand - suspensionStock;
             this.suspensionStock = 0;   
         }
-        //ak je dopyt mensi ako zasoby tak odobere suciastky zo zasob
         else {
             this.suspensionStock -= suspensionDemand;
         }
@@ -96,21 +76,17 @@ public class StrategyA extends MonteCarloCore{
         }else {
             this.headlightsStock -= headlightsDemand;
         }
-        //za vsetky chybajuce suciastky pridam naklady na pokutu
         this.totalCost += totalMissing * 0.3;
     }
     private void getStock(int week){
         double probabilityOfSupply = 0.0;
-        //prvych 10 tyzdnov je pravdepodobnost dodania od 10 do 70 percent
-        //Vygenerujem s akou pravdepodobnostou dodavatel doda v danom tyzdni
+        
         if (week < 10) {
             probabilityOfSupply = supplierFirstTenGen.getSample();
         }
-        //od 11 tyzdna je pravdepodobnost dodania od 30 do 95 percent
         else {
             probabilityOfSupply = supplierLastGen.getSample();
         }
-        //vygenerujem si nahodnu hodnotu a ak je mensia ako pravdepodobnost dodania tak dodam(navysim zasoby na sklade o fixnu hodnotu )
         double randomValue = probabilityGenerator.nextDouble() * 100;
         if (randomValue < probabilityOfSupply) {
             this.suspensionStock += this.suspensionSupply;
