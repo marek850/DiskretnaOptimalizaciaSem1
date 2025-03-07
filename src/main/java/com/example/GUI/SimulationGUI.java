@@ -76,7 +76,13 @@ public class SimulationGUI extends JFrame {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setVisible(true);
     }
+    public void enableStartButton(boolean enabled) {
+        startButton.setEnabled(enabled);
+    }
 
+    public void enableStopButton(boolean enabled) {
+        stopButton.setEnabled(enabled);
+    }
     private void startSimulation() {
         try {
             int totalReplications = Integer.parseInt(repsTextField.getText());

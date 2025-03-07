@@ -8,20 +8,7 @@ import com.example.SimCore.MonteCarloCore;
 //Strategia E
 //Prvych 15 tyzdnov zasobujeme 2 dodavatelom
 //Zvysne tyzdne zasobujeme prvym dodavztelom
-public class StrategyE extends MonteCarloCore{
-    private final int suspensionSupply = 100;
-    private final int brakePadsSupply = 200;
-    private final int headlightsSupply = 150;
-    private final int weeks = 30;
-    private int suspensionStock = 0;
-    private int brakePadsStock = 0;
-    private int headlightsStock = 0;
-    private double totalCost = 0.0;
-    private double result = 0.0;
-    private int seed = 52787;//new Random().nextInt(100000);
-    private int reps = 0;
-    private Random seedGenerator = new Random();
-    private Random probabilityGenerator = new Random(seedGenerator.nextLong());
+public class StrategyE extends SimulationStrategy{
     private ContinuousGenerator supplier2FirstFourTeenGen = new ContinuousGenerator(seedGenerator, List.of(
         new double[]{5.0, 10.0},
         new double[]{10.0, 50.0},
@@ -31,17 +18,6 @@ public class StrategyE extends MonteCarloCore{
             0.4,
             0.3,
             0.2,
-            0.06,
-            0.04));
-    private ContinuousGenerator supplier2LastGen = new ContinuousGenerator(seedGenerator, List.of(
-        new double[]{5.0, 10.0},
-        new double[]{10.0, 50.0},
-        new double[]{50.0, 70.0},
-        new double[]{70.0, 80.0},
-        new double[]{80.0, 95.0}), List.of(
-            0.2,
-            0.4,
-            0.3,
             0.06,
             0.04));
     private DiscreteGenerator suspensionDemandGen = new DiscreteGenerator(seedGenerator, List.of(new int[]{50, 101}), List.of(1.0));
@@ -55,8 +31,18 @@ public class StrategyE extends MonteCarloCore{
             0.4,
             0.3, 
             0.1));
-    private ContinuousGenerator supplierFirstTenGen = new ContinuousGenerator(seedGenerator, List.of(new double[]{10.0, 70.0}), List.of(1.0));;
     private ContinuousGenerator supplierLastGen = new ContinuousGenerator(seedGenerator, List.of(new double[]{30.0, 95.0}), List.of(1.0));
+    public StrategyE() {
+        this.suspensionSupply = 100;
+        this.brakePadsSupply = 200;
+        this.headlightsSupply = 150;
+        this.weeks = 30;
+        this.suspensionStock = 0;
+        this.brakePadsStock = 0;
+        this.headlightsStock = 0;
+    }
+    
+    
 
     @Override
     protected void executeSimRun() {

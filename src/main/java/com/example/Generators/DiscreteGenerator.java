@@ -13,7 +13,7 @@ public class DiscreteGenerator extends AbstractGenerator<Integer> {
         this.intervals = intervals;
         this.probabilities = probabilities;
         for (int i = 0; i < intervals.size(); i++) {
-            intervalGenerators.add(new Random());
+            intervalGenerators.add(new Random(seedGenerator.nextLong()));
         }
     }
 

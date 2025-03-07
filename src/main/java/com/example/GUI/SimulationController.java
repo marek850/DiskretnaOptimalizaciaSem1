@@ -12,7 +12,10 @@ public class SimulationController {
     private Timer timer;
     private int currentReplication;
     private int totalReplications;
-
+    private SimulationGUI gui; // Referencia na GUI
+    public SimulationController(SimulationGUI gui) {
+        this.gui = gui;
+    }
     public void startSimulation(int totalReplications, int points, String selectedStrategy, MonteCarloCore.SimulationCallback callback) {
         this.totalReplications = totalReplications;
         this.currentReplication = 0;
@@ -53,6 +56,8 @@ public class SimulationController {
     public void stopSimulation() {
         if (timer != null) {
             timer.stop();
+            gui.enableStartButton(true);
+            gui.enableStopButton(false);
         }
     }
 }

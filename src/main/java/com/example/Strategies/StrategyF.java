@@ -6,18 +6,7 @@ import com.example.Generators.ContinuousGenerator;
 import com.example.Generators.DiscreteGenerator;
 import com.example.SimCore.MonteCarloCore;
 
-public class StrategyF extends MonteCarloCore {
-    private final int weeks = 30;
-    private int suspensionStock = 0;
-    private int brakePadsStock = 0;
-    private int headlightsStock = 0;
-    private double totalCost = 0.0;
-    private double result = 0.0;
-    private int seed = 52787; // new Random().nextInt(100000);
-    private int reps = 0;
-    private Random seedGenerator = new Random();
-    private Random probabilityGenerator = new Random(seedGenerator.nextLong());
-
+public class StrategyF extends SimulationStrategy {
     // Generátory pre pravdepodobnosti dodania
     private ContinuousGenerator supplier2FirstFourTeenGen = new ContinuousGenerator(seedGenerator, List.of(
         new double[]{5.0, 10.0},
@@ -61,7 +50,15 @@ public class StrategyF extends MonteCarloCore {
     private double[] totalHeadlightsOrder = new double[weeks];
     private int[] supplier1Usage = new int[weeks];
     private int[] supplier2Usage = new int[weeks];
-
+    public StrategyF() {
+        this.suspensionSupply = 100;
+        this.brakePadsSupply = 200;
+        this.headlightsSupply = 150;
+        this.weeks = 30;
+        this.suspensionStock = 0;
+        this.brakePadsStock = 0;
+        this.headlightsStock = 0;
+    }   
     @Override
     protected void executeSimRun() {
         for (int i = 0; i < weeks; i++) {

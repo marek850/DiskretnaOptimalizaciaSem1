@@ -5,20 +5,8 @@ import java.util.Random;
 import com.example.Generators.ContinuousGenerator;
 import com.example.Generators.DiscreteGenerator;
 import com.example.SimCore.MonteCarloCore;
-public class StrategyB extends MonteCarloCore{
-    private final int suspensionSupply = 100;
-    private final int brakePadsSupply = 200;
-    private final int headlightsSupply = 150;
-    private final int weeks = 30;
-    private int suspensionStock = 0;
-    private int brakePadsStock = 0;
-    private int headlightsStock = 0;
-    private double totalCost = 0.0;
-    private double result = 0.0;
-    private int seed = 52787;//new Random().nextInt(100000);
-    private int reps = 0;
-    private Random seedGenerator = new Random();
-    private Random probabilityGenerator = new Random(seedGenerator.nextLong());
+public class StrategyB extends SimulationStrategy{
+    
     private ContinuousGenerator supplierFirstFourTeenGen = new ContinuousGenerator(seedGenerator, List.of(
         new double[]{5.0, 10.0},
         new double[]{10.0, 50.0},
@@ -52,6 +40,18 @@ public class StrategyB extends MonteCarloCore{
             0.4,
             0.3, 
             0.1));
+    public StrategyB() {
+        
+    this.suspensionSupply = 100;
+    this.brakePadsSupply = 200;
+    this.headlightsSupply = 150;
+    this.weeks = 30;
+    this.suspensionStock = 0;
+    this.brakePadsStock = 0;
+    this.headlightsStock = 0;
+    this.totalCost = 0.0;
+    this.result = 0.0;
+    }
 
 
     @Override
@@ -81,9 +81,6 @@ public class StrategyB extends MonteCarloCore{
         //spocitam priemerne naklady za 30 tyzdnov( jednu replikaciu simulacie)
         this.result = this.totalCost / this.reps;
         //System.out.println(this.result);
-        if (callback != null) {
-            callback.onDataPoint(reps, result);
-        }
     }
     @Override
     protected void afterSimulation(){

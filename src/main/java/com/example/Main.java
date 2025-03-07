@@ -20,15 +20,15 @@ public class Main {
         /* GeneratorTester.testContinuousGenerator(seed);  
         GeneratorTester.testDiscreteGenerator(seed); */
         
-        /* StrategyA strategyA = new StrategyA();
-        strategyA.runSimulation(100000); */
+        StrategyA strategyA = new StrategyA();
+        strategyA.runSimulation(100000);
         /* StrategyB strategyB = new StrategyB();
         strategyB.runSimulation(100000); */
-        SwingUtilities.invokeLater(() -> {
+        /* SwingUtilities.invokeLater(() -> {
             SimulationController controller = new SimulationController();
             SimulationGUI gui = new SimulationGUI(controller);
             gui.setVisible(true);
-        });
+        }); */
     
     }
 }
