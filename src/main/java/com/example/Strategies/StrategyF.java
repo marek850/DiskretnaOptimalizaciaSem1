@@ -1,11 +1,9 @@
 package com.example.Strategies;
 import java.util.List;
-import java.util.Random;
 import java.util.function.BiConsumer;
 
 import com.example.Generators.ContinuousGenerator;
 import com.example.Generators.DiscreteGenerator;
-import com.example.SimCore.MonteCarloCore;
 
 public class StrategyF extends SimulationStrategy {
     // Generátory pre pravdepodobnosti dodania
@@ -45,12 +43,11 @@ public class StrategyF extends SimulationStrategy {
     private ContinuousGenerator supplierFirstTenGen = new ContinuousGenerator(seedGenerator, List.of(new double[]{10.0, 70.0}), List.of(1.0));
     private ContinuousGenerator supplierLastGen = new ContinuousGenerator(seedGenerator, List.of(new double[]{30.0, 95.0}), List.of(1.0));
 
-    // Premenné pre sledovanie štatistík
-    private double[] totalSuspensionOrder = new double[weeks];
-    private double[] totalBrakePadsOrder = new double[weeks];
-    private double[] totalHeadlightsOrder = new double[weeks];
-    private int[] supplier1Usage = new int[weeks];
-    private int[] supplier2Usage = new int[weeks];
+    private double[] totalSuspensionOrder;
+    private double[] totalBrakePadsOrder;
+    private double[] totalHeadlightsOrder;
+    private int[] supplier1Usage ;
+    private int[] supplier2Usage;
     public StrategyF(BiConsumer<Double,Integer> datasetUpdater) {
         super(datasetUpdater);
         this.suspensionSupply = 100;
@@ -60,31 +57,29 @@ public class StrategyF extends SimulationStrategy {
         this.suspensionStock = 0;
         this.brakePadsStock = 0;
         this.headlightsStock = 0;
+        totalSuspensionOrder = new double[weeks];
+        totalBrakePadsOrder = new double[weeks];
+        totalHeadlightsOrder = new double[weeks];
+        supplier1Usage = new int[weeks];
+        supplier2Usage = new int[weeks];
     }   
     @Override
     protected void executeSimRun() {
         for (int i = 0; i < weeks; i++) {
-            //predpovedame dopyt
             int[] demand = predictDemand();
-            //vypocitame idealnu objednavku
             int[] order = calculateOrder(demand);
-            //vyberieme vhodnejsieho dodavatela
             int supplier = chooseSupplier(i);
-            //nasimulujeme dodanie objednavky
             boolean isDelivered = simulateDelivery(supplier, i);
 
-            // Aktualizácia štatistík objednávok
             totalSuspensionOrder[i] += order[0];
             totalBrakePadsOrder[i] += order[1];
             totalHeadlightsOrder[i] += order[2];
 
-            // Aktualizácia štatistík využitia dodávateľov
             if (supplier == 1) {
                 supplier1Usage[i]++;
             } else {
                 supplier2Usage[i]++;
             }
-            //doplnime zasoby ak bola objednavka dorucena
             if (isDelivered) {
                 this.suspensionStock += order[0];
                 this.brakePadsStock += order[1];
@@ -93,7 +88,7 @@ public class StrategyF extends SimulationStrategy {
 
             for (int j = 0; j < 7; j++) {
                 if (j == 4) {
-                    sellStock(demand);
+                    sell(demand);
                 }
                 this.totalCost += this.suspensionStock * 0.2;
                 this.totalCost += this.brakePadsStock * 0.3;
@@ -111,32 +106,24 @@ public class StrategyF extends SimulationStrategy {
     protected void afterSimulation() {
         System.out.println("Cost " + this.result);
 
-        // Výpočet priemerných objednávok pre každý produkt
-        double avgSuspensionOrder = 0;
-        double avgBrakePadsOrder = 0;
-        double avgHeadlightsOrder = 0;
+    System.out.println("\nAverage orders per week:");
+    for (int i = 0; i < weeks; i++) {
+        double avgSuspensionOrder = totalSuspensionOrder[i] / reps;
+        double avgBrakePadsOrder = totalBrakePadsOrder[i] / reps;
+        double avgHeadlightsOrder = totalHeadlightsOrder[i] / reps;
 
-        for (int i = 0; i < weeks; i++) {
-            avgSuspensionOrder += totalSuspensionOrder[i];
-            avgBrakePadsOrder += totalBrakePadsOrder[i];
-            avgHeadlightsOrder += totalHeadlightsOrder[i];
-        }
+        System.out.println("Week " + (i + 1) + ":");
+        System.out.println("  Average suspension order: " + avgSuspensionOrder);
+        System.out.println("  Average brake pads order: " + avgBrakePadsOrder);
+        System.out.println("  Average headlights order: " + avgHeadlightsOrder);
+    }
 
-        avgSuspensionOrder /= (weeks * reps);
-        avgBrakePadsOrder /= (weeks * reps);
-        avgHeadlightsOrder /= (weeks * reps);
-
-        System.out.println("Average suspension order per week: " + avgSuspensionOrder);
-        System.out.println("Average brake pads order per week: " + avgBrakePadsOrder);
-        System.out.println("Average headlights order per week: " + avgHeadlightsOrder);
-
-        // Výpočet priemerného využitia dodávateľov
-        System.out.println("\nSupplier usage per week:");
-        for (int i = 0; i < weeks; i++) {
-            double supplier1UsageRate = (double) supplier1Usage[i] / reps * 100;
-            double supplier2UsageRate = (double) supplier2Usage[i] / reps * 100;
-            System.out.println("Week " + (i + 1) + ": Supplier 1 = " + supplier1UsageRate + "%, Supplier 2 = " + supplier2UsageRate + "%");
-        }
+    System.out.println("\nSupplier usage per week:");
+    for (int i = 0; i < weeks; i++) {
+        double supplier1UsageRate = (double) supplier1Usage[i] / reps * 100;
+        double supplier2UsageRate = (double) supplier2Usage[i] / reps * 100;
+        System.out.println("Week " + (i + 1) + ": Supplier 1 = " + supplier1UsageRate + "%, Supplier 2 = " + supplier2UsageRate + "%");
+    }
     }
 
     private int[] predictDemand() {
@@ -164,7 +151,7 @@ public class StrategyF extends SimulationStrategy {
         return probabilityGenerator.nextDouble() * 100 < probability;
     }
 
-    private void sellStock(int[] demand) {
+    private void sell(int[] demand) {
         int totalMissing = 0;
 
         if (suspensionStock < demand[0]) {
@@ -187,9 +174,13 @@ public class StrategyF extends SimulationStrategy {
         }
         this.totalCost += totalMissing * 0.3;
     }
-	@Override
-	public void setDaily(boolean daily2) {
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException("Unimplemented method 'setDaily'");
-	}
+	
+    @Override
+    protected void getStock(int week) {
+            
+    }
+    @Override
+    protected void sellStock() {
+            
+    }
 }

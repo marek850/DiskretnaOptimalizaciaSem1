@@ -1,11 +1,9 @@
 package com.example.Strategies;
 import java.util.List;
-import java.util.Random;
 import java.util.function.BiConsumer;
 
 import com.example.Generators.ContinuousGenerator;
 import com.example.Generators.DiscreteGenerator;
-import com.example.SimCore.MonteCarloCore;
 //Strategia E
 //Prvych 15 tyzdnov zasobujeme 2 dodavatelom
 //Zvysne tyzdne zasobujeme prvym dodavztelom
@@ -44,100 +42,52 @@ public class StrategyE extends SimulationStrategy{
         this.headlightsStock = 0;
     }
     
-    
-
-    @Override
-    protected void executeSimRun() {
-        //System.out.println(this.seed);
-        //Prechadzam 30 tyzdnov
-        for (int i = 0; i < weeks; i++) {
-            //naskladnim suciastky na zaciatku tyzdna
-            getStock(i);
-            //Prechadzam dni v tyzdni
-            for (int j = 0; j < 7; j++) {
-                if (j == 4) {
-                    sellStock();
+    protected void sellStock(){
+            int suspensionDemand = this.suspensionDemandGen.getSample();
+            int brakePadsDemand = this.brakePadsDemandGen.getSample();  
+            int headlightsDemand = this.headlightsDemandGen.getSample();
+            int totalMissing = 0;
+            if (suspensionStock < suspensionDemand) {
+                totalMissing += suspensionDemand - suspensionStock;
+                this.suspensionStock = 0;   
+            }
+            else {
+                this.suspensionStock -= suspensionDemand;
+            }
+            if (brakePadsStock < brakePadsDemand) {
+                totalMissing += brakePadsDemand - brakePadsStock;
+                this.brakePadsStock = 0;
+            }else {
+                this.brakePadsStock -= brakePadsDemand;
+            }
+            if (headlightsStock < headlightsDemand) {
+                totalMissing += headlightsDemand - headlightsStock;
+                this.headlightsStock = 0;
+            }else {
+                this.headlightsStock -= headlightsDemand;
+            }
+            this.totalCost += totalMissing * 0.3;
+        }
+    protected void getStock(int week){
+            double probabilityOfSupply = 0.0;
+            
+            if (week < 15) {
+                probabilityOfSupply = supplier2FirstFourTeenGen.getSample();
+                double randomValue = probabilityGenerator.nextDouble() * 100;
+                if (randomValue < probabilityOfSupply) {
+                    this.suspensionStock += this.suspensionSupply;
+                    this.brakePadsStock += this.brakePadsSupply;
+                    this.headlightsStock += this.headlightsSupply;
                 }
-                //pripocitavam naklady na skladovanie
-                this.totalCost += this.suspensionStock * 0.2;
-                this.totalCost += this.brakePadsStock * 0.3;
-                this.totalCost += this.headlightsStock * 0.25;
-                //ak je piatok tak predam suciastky
-                
+            } else{
+                probabilityOfSupply = supplierLastGen.getSample();
+                double randomValue = probabilityGenerator.nextDouble() * 100;
+                if (randomValue < probabilityOfSupply) {
+                    this.suspensionStock += this.suspensionSupply;
+                    this.brakePadsStock += this.brakePadsSupply;
+                    this.headlightsStock += this.headlightsSupply;
+                }
             }
+            
         }
-        this.suspensionStock = 0;
-        this.brakePadsStock = 0;
-        this.headlightsStock = 0;
-        this.reps += 1;
-        //spocitam priemerne naklady za 30 tyzdnov( jednu replikaciu simulacie)
-        this.result = this.totalCost / this.reps;
-        //System.out.println(this.result);
-        
-    }
-    @Override
-    protected void afterSimulation(){
-        System.out.println("Cost  " + this.result);
-    }
-    private void sellStock(){
-        //vygenerujem si dopyt na suciastky
-        int suspensionDemand = this.suspensionDemandGen.getSample();
-        int brakePadsDemand = this.brakePadsDemandGen.getSample();  
-        int headlightsDemand = this.headlightsDemandGen.getSample();
-        int totalMissing = 0;
-        //ak je dopyt vacsi ako zasoby tak pridam chybajucu suciastku do celkovej chyby
-        //a zasoby nastavim na 0
-        if (suspensionStock < suspensionDemand) {
-            totalMissing += suspensionDemand - suspensionStock;
-            this.suspensionStock = 0;   
-        }
-        //ak je dopyt mensi ako zasoby tak odobere suciastky zo zasob
-        else {
-            this.suspensionStock -= suspensionDemand;
-        }
-        if (brakePadsStock < brakePadsDemand) {
-            totalMissing += brakePadsDemand - brakePadsStock;
-            this.brakePadsStock = 0;
-        }else {
-            this.brakePadsStock -= brakePadsDemand;
-        }
-        if (headlightsStock < headlightsDemand) {
-            totalMissing += headlightsDemand - headlightsStock;
-            this.headlightsStock = 0;
-        }else {
-            this.headlightsStock -= headlightsDemand;
-        }
-        //za vsetky chybajuce suciastky pridam naklady na pokutu
-        this.totalCost += totalMissing * 0.3;
-    }
-    private void getStock(int week){
-        double probabilityOfSupply = 0.0;
-        
-        if (week < 15) {
-            probabilityOfSupply = supplier2FirstFourTeenGen.getSample();
-            double randomValue = probabilityGenerator.nextDouble() * 100;
-            if (randomValue < probabilityOfSupply) {
-                this.suspensionStock += this.suspensionSupply;
-                this.brakePadsStock += this.brakePadsSupply;
-                this.headlightsStock += this.headlightsSupply;
-            }
-        } else{
-            probabilityOfSupply = supplierLastGen.getSample();
-            double randomValue = probabilityGenerator.nextDouble() * 100;
-            if (randomValue < probabilityOfSupply) {
-                this.suspensionStock += this.suspensionSupply;
-                this.brakePadsStock += this.brakePadsSupply;
-                this.headlightsStock += this.headlightsSupply;
-            }
-        }
-        
-    }
-
-
-
-	@Override
-	public void setDaily(boolean daily2) {
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException("Unimplemented method 'setDaily'");
-	}
 }

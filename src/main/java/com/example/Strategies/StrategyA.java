@@ -27,94 +27,52 @@ public class StrategyA extends SimulationStrategy{
     }
     
 
-    @Override
-    protected void executeSimRun() {
-        int dayIndex = 0;
-        //System.out.println(this.seed);
-        //Prechadzam 30 tyzdnov
-        for (int i = 0; i < weeks; i++) {
-            //naskladnim suciastky na zaciatku tyzdna
-            getStock(i);
-            //Prechadzam dni v tyzdni
-            for (int j = 0; j < 7; j++) {
-                if (j == 4) {
-                    sellStock();
-                }
-                // Výpočet nákladov pre aktuálny deň
-                double cost = this.suspensionStock * 0.2 + this.brakePadsStock * 0.3 + this.headlightsStock * 0.25;
-                this.totalCost += cost;
-                processDailyResults(dayIndex, cost);
-                dayIndex++;
-                // Výpočet zisku pre aktuálny deň            
-                /* //pripocitavam naklady na skladovanie
-                this.totalCost += this.suspensionStock * 0.2;
-                this.totalCost += this.brakePadsStock * 0.3;
-                this.totalCost += this.headlightsStock * 0.25; */
-                //ak je piatok tak predam suciastky
-                
+    
+    protected void sellStock(){
+            //vygenerujem si dopyt na suciastky
+            int suspensionDemand = this.suspensionDemandGen.getSample();
+            int brakePadsDemand = this.brakePadsDemandGen.getSample();  
+            int headlightsDemand = this.headlightsDemandGen.getSample();
+            int totalMissing = 0;
+            //ak je dopyt vacsi ako zasoby tak pridam chybajucu suciastku do celkovej chyby
+            //a zasoby nastavim na 0
+            if (suspensionStock < suspensionDemand) {
+                totalMissing += suspensionDemand - suspensionStock;
+                this.suspensionStock = 0;   
+            }
+            //ak je dopyt mensi ako zasoby tak odobere suciastky zo zasob
+            else {
+                this.suspensionStock -= suspensionDemand;
+            }
+            if (brakePadsStock < brakePadsDemand) {
+                totalMissing += brakePadsDemand - brakePadsStock;
+                this.brakePadsStock = 0;
+            }else {
+                this.brakePadsStock -= brakePadsDemand;
+            }
+            if (headlightsStock < headlightsDemand) {
+                totalMissing += headlightsDemand - headlightsStock;
+                this.headlightsStock = 0;
+            }else {
+                this.headlightsStock -= headlightsDemand;
+            }
+            //za vsetky chybajuce suciastky pridam naklady na pokutu
+            this.totalCost += totalMissing * 0.3;
+        }
+    protected void getStock(int week){
+            double probabilityOfSupply = 0.0;
+            if (week < 10) {
+                probabilityOfSupply = supplierFirstTenGen.getSample();
+            }
+            
+            else {
+                probabilityOfSupply = supplierLastGen.getSample();
+            }
+            double randomValue = probabilityGenerator.nextDouble() * 100;
+            if (randomValue < probabilityOfSupply) {
+                this.suspensionStock += this.suspensionSupply;
+                this.brakePadsStock += this.brakePadsSupply;
+                this.headlightsStock += this.headlightsSupply;
             }
         }
-    }
-    
-    @Override
-    protected void afterSimulation(){
-        
-    }
-    private void sellStock(){
-        //vygenerujem si dopyt na suciastky
-        int suspensionDemand = this.suspensionDemandGen.getSample();
-        int brakePadsDemand = this.brakePadsDemandGen.getSample();  
-        int headlightsDemand = this.headlightsDemandGen.getSample();
-        int totalMissing = 0;
-        //ak je dopyt vacsi ako zasoby tak pridam chybajucu suciastku do celkovej chyby
-        //a zasoby nastavim na 0
-        if (suspensionStock < suspensionDemand) {
-            totalMissing += suspensionDemand - suspensionStock;
-            this.suspensionStock = 0;   
-        }
-        //ak je dopyt mensi ako zasoby tak odobere suciastky zo zasob
-        else {
-            this.suspensionStock -= suspensionDemand;
-        }
-        if (brakePadsStock < brakePadsDemand) {
-            totalMissing += brakePadsDemand - brakePadsStock;
-            this.brakePadsStock = 0;
-        }else {
-            this.brakePadsStock -= brakePadsDemand;
-        }
-        if (headlightsStock < headlightsDemand) {
-            totalMissing += headlightsDemand - headlightsStock;
-            this.headlightsStock = 0;
-        }else {
-            this.headlightsStock -= headlightsDemand;
-        }
-        //za vsetky chybajuce suciastky pridam naklady na pokutu
-        this.totalCost += totalMissing * 0.3;
-    }
-    private void getStock(int week){
-        double probabilityOfSupply = 0.0;
-        //prvych 10 tyzdnov je pravdepodobnost dodania od 10 do 70 percent
-        //Vygenerujem s akou pravdepodobnostou dodavatel doda v danom tyzdni
-        if (week < 10) {
-            probabilityOfSupply = supplierFirstTenGen.getSample();
-        }
-        //od 11 tyzdna je pravdepodobnost dodania od 30 do 95 percent
-        else {
-            probabilityOfSupply = supplierLastGen.getSample();
-        }
-        //vygenerujem si nahodnu hodnotu a ak je mensia ako pravdepodobnost dodania tak dodam(navysim zasoby na sklade o fixnu hodnotu )
-        double randomValue = probabilityGenerator.nextDouble() * 100;
-        if (randomValue < probabilityOfSupply) {
-            this.suspensionStock += this.suspensionSupply;
-            this.brakePadsStock += this.brakePadsSupply;
-            this.headlightsStock += this.headlightsSupply;
-        }
-    }
-
-
-    @Override
-    public void setDaily(boolean daily2) {
-        // TODO Auto-generated method stub
-        daily = daily2;
-    }
 }

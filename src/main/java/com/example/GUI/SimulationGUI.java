@@ -6,17 +6,13 @@ import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.axis.ValueAxis;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.XYPlot;
-import org.jfree.data.category.DefaultCategoryDataset;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 import org.jfree.ui.RefineryUtilities;
 
 import com.example.App.MonteCarloSimApp;
-import com.example.Strategies.SimulationStrategy;
-
 import javax.swing.*;
 import java.awt.*;
-import java.lang.reflect.InvocationTargetException;
 
 public class SimulationGUI extends JFrame {
     private XYSeriesCollection dataset;
@@ -50,21 +46,21 @@ public class SimulationGUI extends JFrame {
         chartPanel.setPreferredSize(new Dimension(800, 600));
 
         // Pole pre zadanie počtu replikácií
-        JLabel repsLabel = new JLabel("Number of Replications:");
+        JLabel repsLabel = new JLabel("Počet replikácií:");
         repsTextField = new JTextField(10);
 
         // Pole pre zadanie počtu bodov na grafe
-        JLabel pointsLabel = new JLabel("Number of Points on Graph:");
+        JLabel pointsLabel = new JLabel("Počet bodov vykreslených na grafe:");
         pointsTextField = new JTextField(10);
 
         // Výber stratégie
-        JLabel strategyLabel = new JLabel("Select Strategy:");
-        String[] strategies = {"StrategyA", "StrategyB", "StrategyC", "StrategyD", "StrategyE", "StrategyF"};
+        JLabel strategyLabel = new JLabel("Výber stratégie:");
+        String[] strategies = {"StrategyA", "StrategyB", "StrategyC", "StrategyD", "StrategyE","StrategyG","CustomStrategy"};
         strategyComboBox = new JComboBox<>(strategies);
 
         // Tlačidlá
-        startButton = new JButton("Start");
-        stopButton = new JButton("Stop");
+        startButton = new JButton("Spustiť");
+        stopButton = new JButton("Zastaviť");
         stopButton.setEnabled(false);
 
         startButton.addActionListener(e -> startSimulation());
@@ -113,7 +109,7 @@ public class SimulationGUI extends JFrame {
         }else{
             XYPlot plot = (XYPlot) chart.getPlot();
             ValueAxis xAxis = plot.getDomainAxis();
-            xAxis.setLabel("Celkové náklady");
+            xAxis.setLabel("Replikácie");
         }
         int points = 0;
         if (pointsTextField.getText() != null && !pointsTextField.getText().isEmpty()) {
