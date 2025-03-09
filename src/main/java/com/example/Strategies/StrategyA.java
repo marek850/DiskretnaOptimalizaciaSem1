@@ -1,10 +1,9 @@
 package com.example.Strategies;
 import java.util.List;
-import java.util.Random;
+import java.util.function.BiConsumer;
 
 import com.example.Generators.ContinuousGenerator;
 import com.example.Generators.DiscreteGenerator;
-import com.example.SimCore.MonteCarloCore;
 public class StrategyA extends SimulationStrategy{
     private ContinuousGenerator supplierFirstTenGen = new ContinuousGenerator(seedGenerator, List.of(new double[]{10.0, 70.0}), List.of(1.0));;
     private ContinuousGenerator supplierLastGen = new ContinuousGenerator(seedGenerator, List.of(new double[]{30.0, 95.0}), List.of(1.0));
@@ -12,7 +11,8 @@ public class StrategyA extends SimulationStrategy{
     private DiscreteGenerator brakePadsDemandGen = new DiscreteGenerator(seedGenerator, List.of(new int[]{60, 251}), List.of(1.0));
     private DiscreteGenerator headlightsDemandGen = new DiscreteGenerator(seedGenerator, List.of(new int[]{30, 60},new int[]{60, 100},new int[]{100, 140}           
                                                                                                                         , new int[]{140, 160}), List.of(0.2, 0.4, 0.3, 0.1));
-    public StrategyA() {
+    public StrategyA(BiConsumer<Double,Integer> datasetUpdater) {
+        super(datasetUpdater);
         this.suspensionSupply = 100;
         this.brakePadsSupply = 200;
         this.headlightsSupply = 150;
@@ -24,8 +24,6 @@ public class StrategyA extends SimulationStrategy{
         this.result = 0.0;
         this.seed = 52787;//new Random().nextInt(100000);
         this.reps = 0;
-        
-
     }
     
 
@@ -45,7 +43,9 @@ public class StrategyA extends SimulationStrategy{
                 // Výpočet nákladov pre aktuálny deň
                 double cost = this.suspensionStock * 0.2 + this.brakePadsStock * 0.3 + this.headlightsStock * 0.25;
                 this.totalCost += cost;
-
+                processDailyResults(dayIndex, cost);
+                dayIndex++;
+                // Výpočet zisku pre aktuálny deň            
                 /* //pripocitavam naklady na skladovanie
                 this.totalCost += this.suspensionStock * 0.2;
                 this.totalCost += this.brakePadsStock * 0.3;
@@ -54,15 +54,8 @@ public class StrategyA extends SimulationStrategy{
                 
             }
         }
-        this.suspensionStock = 0;
-        this.brakePadsStock = 0;
-        this.headlightsStock = 0;
-        this.reps += 1;
-        //spocitam priemerne naklady za 30 tyzdnov( jednu replikaciu simulacie)
-        this.result = this.totalCost / this.reps;
-        //System.out.println(this.result);
-        
     }
+    
     @Override
     protected void afterSimulation(){
         
@@ -116,5 +109,12 @@ public class StrategyA extends SimulationStrategy{
             this.brakePadsStock += this.brakePadsSupply;
             this.headlightsStock += this.headlightsSupply;
         }
+    }
+
+
+    @Override
+    public void setDaily(boolean daily2) {
+        // TODO Auto-generated method stub
+        daily = daily2;
     }
 }

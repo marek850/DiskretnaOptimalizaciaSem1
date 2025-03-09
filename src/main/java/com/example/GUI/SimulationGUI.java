@@ -2,37 +2,50 @@ package com.example.GUI;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
+import org.jfree.chart.axis.NumberAxis;
+import org.jfree.chart.axis.ValueAxis;
 import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.chart.plot.XYPlot;
 import org.jfree.data.category.DefaultCategoryDataset;
+import org.jfree.data.xy.XYSeries;
+import org.jfree.data.xy.XYSeriesCollection;
 import org.jfree.ui.RefineryUtilities;
+
+import com.example.App.MonteCarloSimApp;
+import com.example.Strategies.SimulationStrategy;
 
 import javax.swing.*;
 import java.awt.*;
+import java.lang.reflect.InvocationTargetException;
 
 public class SimulationGUI extends JFrame {
-    private DefaultCategoryDataset dataset;
+    private XYSeriesCollection dataset;
     private JFreeChart chart;
     private JButton startButton;
     private JButton stopButton;
     private JTextField repsTextField;
     private JTextField pointsTextField;
     private JComboBox<String> strategyComboBox;
-    private SimulationController controller;
+    private MonteCarloSimApp app;
 
-    public SimulationGUI(SimulationController controller) {
+    public SimulationGUI(MonteCarloSimApp app) {
         super("Simulation GUI");
-        this.controller = controller;
+        this.app = app;
 
         // Inicializácia datasetu a grafu
-        dataset = new DefaultCategoryDataset();
-        chart = ChartFactory.createLineChart(
-                "Average Cost Over Replications", // Názov grafu
-                "Replication", // X-os
-                "Average Cost", // Y-os
+        dataset = new XYSeriesCollection(new XYSeries("Celkove naklady"));
+        chart = ChartFactory.createXYLineChart(
+                "Simulácia celkových nákladov", // Názov grafu
+                "Replikacie", // X-os
+                "Celkové náklady", // Y-os
                 dataset,
                 PlotOrientation.VERTICAL,
                 true, true, false);
+        NumberAxis rangeAxis = (NumberAxis) chart.getXYPlot().getRangeAxis();
+        rangeAxis.setAutoRange(true); // Enable auto-ranging
+        rangeAxis.setAutoRangeIncludesZero(false); // Exclude zero from the Y-axis range
 
+        
         ChartPanel chartPanel = new ChartPanel(chart);
         chartPanel.setPreferredSize(new Dimension(800, 600));
 
@@ -46,7 +59,7 @@ public class SimulationGUI extends JFrame {
 
         // Výber stratégie
         JLabel strategyLabel = new JLabel("Select Strategy:");
-        String[] strategies = {"Strategy A", "Strategy B", "Strategy C", "Strategy D", "Strategy E", "Strategy F"};
+        String[] strategies = {"StrategyA", "StrategyB", "StrategyC", "StrategyD", "StrategyE", "StrategyF"};
         strategyComboBox = new JComboBox<>(strategies);
 
         // Tlačidlá
@@ -76,36 +89,47 @@ public class SimulationGUI extends JFrame {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setVisible(true);
     }
-    public void enableStartButton(boolean enabled) {
-        startButton.setEnabled(enabled);
+    public void enableStartButton() {
+        startButton.setEnabled(true);
     }
 
-    public void enableStopButton(boolean enabled) {
-        stopButton.setEnabled(enabled);
+    public void enableStopButton() {
+        stopButton.setEnabled(true);
+    }
+    public void disableStartButton() {
+        startButton.setEnabled(false);
+    }
+
+    public void disableStopButton() {
+        stopButton.setEnabled(false);
     }
     private void startSimulation() {
-        try {
-            int totalReplications = Integer.parseInt(repsTextField.getText());
-            int points = Integer.parseInt(pointsTextField.getText());
-            String selectedStrategy = (String) strategyComboBox.getSelectedItem();
-
-            startButton.setEnabled(false);
-            stopButton.setEnabled(true);
-            dataset.clear();
-
-            // Spustenie simulácie
-            controller.startSimulation(totalReplications, points, selectedStrategy, (replication, averageCost) -> {
-                if (replication % (totalReplications / points) == 0) { // Vykreslenie iba každého N-tého bodu
-                    dataset.addValue(averageCost, "Average Cost", Integer.toString(replication));
-                }
-            });
-        } catch (NumberFormatException ex) {
-            JOptionPane.showMessageDialog(this, "Please enter valid numbers for replications and points.", "Error", JOptionPane.ERROR_MESSAGE);
+        
+        int totalReplications = Integer.parseInt(repsTextField.getText());
+        if (totalReplications == 1) {
+            XYPlot plot = (XYPlot) chart.getPlot();
+            ValueAxis xAxis = plot.getDomainAxis();
+            xAxis.setLabel("Dni");
+        }else{
+            XYPlot plot = (XYPlot) chart.getPlot();
+            ValueAxis xAxis = plot.getDomainAxis();
+            xAxis.setLabel("Celkové náklady");
         }
+        int points = 0;
+        if (pointsTextField.getText() != null && !pointsTextField.getText().isEmpty()) {
+            points = Integer.parseInt(pointsTextField.getText());
+        }
+        String strategyString = (String)strategyComboBox.getSelectedItem();
+        startButton.setEnabled(false);
+        stopButton.setEnabled(true);
+        dataset.getSeries("Celkove naklady").clear();
+        startButton.setEnabled(false);
+        stopButton.setEnabled(true);
+        app.startSimulation(totalReplications, points, strategyString, dataset);
     }
 
     private void stopSimulation() {
-        controller.stopSimulation();
+        app.stopSimulation();
         startButton.setEnabled(true);
         stopButton.setEnabled(false);
     }

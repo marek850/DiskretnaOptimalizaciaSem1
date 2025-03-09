@@ -1,6 +1,7 @@
 package com.example.Strategies;
 import java.util.List;
 import java.util.Random;
+import java.util.function.BiConsumer;
 
 import com.example.Generators.ContinuousGenerator;
 import com.example.Generators.DiscreteGenerator;
@@ -50,7 +51,8 @@ public class StrategyF extends SimulationStrategy {
     private double[] totalHeadlightsOrder = new double[weeks];
     private int[] supplier1Usage = new int[weeks];
     private int[] supplier2Usage = new int[weeks];
-    public StrategyF() {
+    public StrategyF(BiConsumer<Double,Integer> datasetUpdater) {
+        super(datasetUpdater);
         this.suspensionSupply = 100;
         this.brakePadsSupply = 200;
         this.headlightsSupply = 150;
@@ -185,4 +187,9 @@ public class StrategyF extends SimulationStrategy {
         }
         this.totalCost += totalMissing * 0.3;
     }
+	@Override
+	public void setDaily(boolean daily2) {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("Unimplemented method 'setDaily'");
+	}
 }

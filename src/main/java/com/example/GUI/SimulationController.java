@@ -1,4 +1,4 @@
-package com.example.GUI;
+/* package com.example.GUI;
 import com.example.SimCore.MonteCarloCore;
 import com.example.Strategies.StrategyA;
 import com.example.Strategies.StrategyB;
@@ -16,7 +16,7 @@ public class SimulationController {
     public SimulationController(SimulationGUI gui) {
         this.gui = gui;
     }
-    public void startSimulation(int totalReplications, int points, String selectedStrategy, MonteCarloCore.SimulationCallback callback) {
+    public void startSimulation(int totalReplications, int points, String selectedStrategy) {
         this.totalReplications = totalReplications;
         this.currentReplication = 0;
 
@@ -60,4 +60,4 @@ public class SimulationController {
             gui.enableStopButton(false);
         }
     }
-}
+} */
