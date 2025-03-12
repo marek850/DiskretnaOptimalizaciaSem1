@@ -1,4 +1,5 @@
 package com.example.GUI;
+
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
@@ -6,6 +7,7 @@ import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.axis.ValueAxis;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.XYPlot;
+import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 import org.jfree.ui.RefineryUtilities;
@@ -21,6 +23,8 @@ public class SimulationGUI extends JFrame {
     private JButton stopButton;
     private JTextField repsTextField;
     private JTextField pointsTextField;
+    private JTextField currentReplicationTextField; // Pole pre aktuálnu replikáciu
+    private JTextField averageCostTextField; // Pole pre priemerné náklady
     private JComboBox<String> strategyComboBox;
     private MonteCarloSimApp app;
 
@@ -37,11 +41,12 @@ public class SimulationGUI extends JFrame {
                 dataset,
                 PlotOrientation.VERTICAL,
                 true, true, false);
+        /* XYLineAndShapeRenderer renderer = new XYLineAndShapeRenderer(true, true);
+        chart.getXYPlot().setRenderer(renderer); */
         NumberAxis rangeAxis = (NumberAxis) chart.getXYPlot().getRangeAxis();
         rangeAxis.setAutoRange(true); // Enable auto-ranging
         rangeAxis.setAutoRangeIncludesZero(false); // Exclude zero from the Y-axis range
 
-        
         ChartPanel chartPanel = new ChartPanel(chart);
         chartPanel.setPreferredSize(new Dimension(800, 600));
 
@@ -53,9 +58,18 @@ public class SimulationGUI extends JFrame {
         JLabel pointsLabel = new JLabel("Počet bodov vykreslených na grafe:");
         pointsTextField = new JTextField(10);
 
+        // Nové polia pre aktuálnu replikáciu a priemerné náklady
+        JLabel currentReplicationLabel = new JLabel("Aktuálna replikácia:");
+        currentReplicationTextField = new JTextField(10);
+        currentReplicationTextField.setEditable(false); // Zakázanie editácie
+
+        JLabel averageCostLabel = new JLabel("Priemerné náklady:");
+        averageCostTextField = new JTextField(10);
+        averageCostTextField.setEditable(false); // Zakázanie editácie
+
         // Výber stratégie
         JLabel strategyLabel = new JLabel("Výber stratégie:");
-        String[] strategies = {"StrategyA", "StrategyB", "StrategyC", "StrategyD", "StrategyE","StrategyG","CustomStrategy"};
+        String[] strategies = {"StrategyA", "StrategyB", "StrategyC", "StrategyD", "StrategyE", "StrategyG", "CustomStrategy"};
         strategyComboBox = new JComboBox<>(strategies);
 
         // Tlačidlá
@@ -71,6 +85,10 @@ public class SimulationGUI extends JFrame {
         controlPanel.add(repsTextField);
         controlPanel.add(pointsLabel);
         controlPanel.add(pointsTextField);
+        controlPanel.add(currentReplicationLabel); // Pridanie labelu pre aktuálnu replikáciu
+        controlPanel.add(currentReplicationTextField); // Pridanie textového poľa pre aktuálnu replikáciu
+        controlPanel.add(averageCostLabel); // Pridanie labelu pre priemerné náklady
+        controlPanel.add(averageCostTextField); // Pridanie textového poľa pre priemerné náklady
         controlPanel.add(strategyLabel);
         controlPanel.add(strategyComboBox);
         controlPanel.add(startButton);
@@ -85,6 +103,7 @@ public class SimulationGUI extends JFrame {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setVisible(true);
     }
+
     public void enableStartButton() {
         startButton.setEnabled(true);
     }
@@ -92,6 +111,7 @@ public class SimulationGUI extends JFrame {
     public void enableStopButton() {
         stopButton.setEnabled(true);
     }
+
     public void disableStartButton() {
         startButton.setEnabled(false);
     }
@@ -99,14 +119,14 @@ public class SimulationGUI extends JFrame {
     public void disableStopButton() {
         stopButton.setEnabled(false);
     }
+
     private void startSimulation() {
-        
         int totalReplications = Integer.parseInt(repsTextField.getText());
         if (totalReplications == 1) {
             XYPlot plot = (XYPlot) chart.getPlot();
             ValueAxis xAxis = plot.getDomainAxis();
             xAxis.setLabel("Dni");
-        }else{
+        } else {
             XYPlot plot = (XYPlot) chart.getPlot();
             ValueAxis xAxis = plot.getDomainAxis();
             xAxis.setLabel("Replikácie");
@@ -115,18 +135,23 @@ public class SimulationGUI extends JFrame {
         if (pointsTextField.getText() != null && !pointsTextField.getText().isEmpty()) {
             points = Integer.parseInt(pointsTextField.getText());
         }
-        String strategyString = (String)strategyComboBox.getSelectedItem();
+        String strategyString = (String) strategyComboBox.getSelectedItem();
+
         startButton.setEnabled(false);
         stopButton.setEnabled(true);
         dataset.getSeries("Celkove naklady").clear();
-        startButton.setEnabled(false);
-        stopButton.setEnabled(true);
-        app.startSimulation(totalReplications, points, strategyString, dataset);
-    }
-
+        final int finalPoints = points;
+        Thread thread = new Thread(() -> {
+            app.startSimulation(totalReplications, finalPoints, strategyString, dataset, currentReplicationTextField, averageCostTextField);
+            enableStartButton();
+            disableStopButton();
+        }); 
+        thread.start();   
+    }  
     private void stopSimulation() {
         app.stopSimulation();
         startButton.setEnabled(true);
         stopButton.setEnabled(false);
     }
+
 }

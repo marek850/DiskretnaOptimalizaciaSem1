@@ -2,6 +2,9 @@ package com.example.App;
 
 import java.lang.reflect.Constructor;
 import java.util.function.BiConsumer;
+
+import javax.swing.JTextField;
+
 import org.jfree.data.xy.XYSeriesCollection;
 
 import com.example.Strategies.SimulationStrategy;
@@ -10,7 +13,7 @@ public class MonteCarloSimApp {
     private SimulationStrategy simulatedStrategy;
 
     public void startSimulation(int totalReplications, int points, String strategyString,
-            XYSeriesCollection dataset) {
+            XYSeriesCollection dataset, JTextField currentReplicationTextField, JTextField averageCostTextField) {
         try {
             BiConsumer<Double, Integer> datasetUpdater = (result, reps) -> {
                 int replicationsToSkip = (int) (totalReplications * 0.3);
@@ -30,6 +33,8 @@ public class MonteCarloSimApp {
                         
                     }
                 }
+                currentReplicationTextField.setText(String.valueOf(reps));
+                averageCostTextField.setText(String.format("%.2f", result));
             };
 
             String classname = "com.example.Strategies." + strategyString;
@@ -38,10 +43,8 @@ public class MonteCarloSimApp {
             this.simulatedStrategy = (SimulationStrategy) constructor.newInstance(datasetUpdater);
             boolean daily = (totalReplications == 1);
             this.simulatedStrategy.setDaily(daily);
-            Thread thread = new Thread(() -> {
-                this.simulatedStrategy.runSimulation(totalReplications);
-            });
-            thread.start();
+            
+            this.simulatedStrategy.runSimulation(totalReplications);
             
 
         } catch (Exception e) {

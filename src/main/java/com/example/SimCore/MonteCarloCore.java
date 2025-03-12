@@ -25,6 +25,5 @@ public abstract class MonteCarloCore {
 
     protected void afterSimRun() {
     }
-
     protected abstract void executeSimRun();
 }

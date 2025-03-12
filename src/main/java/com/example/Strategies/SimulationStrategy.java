@@ -30,6 +30,7 @@ public abstract class SimulationStrategy extends MonteCarloCore{
         this.result = 0.0;
         this.daily = false;
         this.datasetUpdater = datasetUpdater;
+
     }
     @Override
     protected void executeSimRun() {
@@ -43,8 +44,7 @@ public abstract class SimulationStrategy extends MonteCarloCore{
                 double cost = this.suspensionStock * 0.2 + this.brakePadsStock * 0.3 + this.headlightsStock * 0.25;
                 this.totalCost += cost;
                 if (daily) {
-                    processDailyResults(dayIndex, cost);
-                    
+                    processDailyResults(dayIndex, this.totalCost);
                 }
                 dayIndex++;
             }

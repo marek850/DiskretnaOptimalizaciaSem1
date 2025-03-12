@@ -26,8 +26,6 @@ public class StrategyA extends SimulationStrategy{
         this.reps = 0;
     }
     
-
-    
     protected void sellStock(){
             //vygenerujem si dopyt na suciastky
             int suspensionDemand = this.suspensionDemandGen.getSample();
@@ -56,7 +54,6 @@ public class StrategyA extends SimulationStrategy{
             }else {
                 this.headlightsStock -= headlightsDemand;
             }
-            //za vsetky chybajuce suciastky pridam naklady na pokutu
             this.totalCost += totalMissing * 0.3;
         }
     protected void getStock(int week){

@@ -48,11 +48,6 @@ public class CustomStrategy extends SimulationStrategy {
     private ContinuousGenerator supplierFirstTenGen = new ContinuousGenerator(seedGenerator, List.of(new double[]{10.0, 70.0}), List.of(1.0));
     private ContinuousGenerator supplierLastGen = new ContinuousGenerator(seedGenerator, List.of(new double[]{30.0, 95.0}), List.of(1.0));
 
-    private double[] totalSuspensionOrder;
-    private double[] totalBrakePadsOrder;
-    private double[] totalHeadlightsOrder;
-    private int[] supplier1Usage;
-    private int[] supplier2Usage;
     private List<int[]> weeklyConfigurations;
     public CustomStrategy(BiConsumer<Double,Integer> datasetUpdater) {
         super(datasetUpdater);
@@ -63,11 +58,6 @@ public class CustomStrategy extends SimulationStrategy {
         this.suspensionStock = 0;
         this.brakePadsStock = 0;
         this.headlightsStock = 0;
-        totalSuspensionOrder = new double[weeks];
-        totalBrakePadsOrder = new double[weeks];
-        totalHeadlightsOrder = new double[weeks];
-        supplier1Usage = new int[weeks];
-        supplier2Usage = new int[weeks];
         weeklyConfigurations = new ArrayList<>();
         this.loadConfiguration();
     }   
@@ -106,13 +96,10 @@ public class CustomStrategy extends SimulationStrategy {
             int brakePadsDemand = this.brakePadsDemandGen.getSample();  
             int headlightsDemand = this.headlightsDemandGen.getSample();
             int totalMissing = 0;
-            //ak je dopyt vacsi ako zasoby tak pridam chybajucu suciastku do celkovej chyby
-            //a zasoby nastavim na 0
             if (suspensionStock < suspensionDemand) {
                 totalMissing += suspensionDemand - suspensionStock;
                 this.suspensionStock = 0;   
             }
-            //ak je dopyt mensi ako zasoby tak odobere suciastky zo zasob
             else {
                 this.suspensionStock -= suspensionDemand;
             }
@@ -128,7 +115,6 @@ public class CustomStrategy extends SimulationStrategy {
             }else {
                 this.headlightsStock -= headlightsDemand;
             }
-            //za vsetky chybajuce suciastky pridam naklady na pokutu
             this.totalCost += totalMissing * 0.3;
         }
     public void loadConfiguration() {

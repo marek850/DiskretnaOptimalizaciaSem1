@@ -90,14 +90,10 @@ public class StrategyF extends SimulationStrategy {
                 if (j == 4) {
                     sell(demand);
                 }
-                this.totalCost += this.suspensionStock * 0.2;
-                this.totalCost += this.brakePadsStock * 0.3;
-                this.totalCost += this.headlightsStock * 0.25;
+                this.totalCost += (this.suspensionStock * 0.2) + (this.brakePadsStock * 0.3) + (this.headlightsStock * 0.25);
             }
         }
-        this.suspensionStock = 0;
-        this.brakePadsStock = 0;
-        this.headlightsStock = 0;
+        this.suspensionStock = this.brakePadsStock = this.headlightsStock = 0;
         this.reps += 1;
         this.result = this.totalCost / this.reps;
     }
